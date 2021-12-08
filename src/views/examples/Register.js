@@ -43,6 +43,7 @@ const Register = (props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [notify, setNotify] = useState(false)
   //const [userData, setUserData] = useState({});
 
   // onAuthStateChanged(auth, (currentUser) => {
@@ -78,6 +79,7 @@ const Register = (props) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setNotify(false);
     console.log(name, email, password);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
@@ -93,6 +95,7 @@ const Register = (props) => {
     catch (err) {
       console.log(err.message);      
       setIsLoading(false);
+      setNotify(true);
     }
   }
 
@@ -145,6 +148,10 @@ const Register = (props) => {
             <div className="text-center text-muted mb-4">
               <small>Or sign up with credentials</small>
             </div>
+            {notify ? 
+            <div className="text-center text-danger mb-4">
+              <b>Could not Register. Please try again!</b>
+            </div> : null }
             <Form role="form" onSubmit={handleRegister}>
               <FormGroup>
                 <InputGroup className="input-group-alternative mb-3">

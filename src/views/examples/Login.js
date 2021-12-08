@@ -30,9 +30,62 @@ import {
   InputGroup,
   Row,
   Col,
+  Spinner
 } from "reactstrap";
+import { useState } from 'react';
+import { withRouter } from 'react-router-dom';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase-config";
+import axios from "axios";
 
-const Login = () => {
+const Login = (props) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [notify, setNotify] = useState(false);
+
+  const apiCall = async (data) =>{
+    console.log(data.uid, data.email);
+    const postData = {
+      uid : data.uid,
+      email : data.email
+    }
+    var config = {
+      method: 'post',
+      url: 'https://registertest.free.beeceptor.com/init',
+      headers: { 
+        'Content-Type': 'text/plain'
+      },
+      data : JSON.stringify(postData)
+    };
+    
+    axios(config)
+    .then(response => {
+      console.log(JSON.stringify(response.data));
+      props.history.push('/auth/success');
+    })
+    .catch(function (error) {
+      console.log(error);
+      props.history.push('/auth/fail');
+    });
+  }
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setNotify(false);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      //console.log(user);
+      apiCall(auth.currentUser);
+    }
+    catch (err) {
+      console.log(err.message); 
+      setNotify(true);     
+      setIsLoading(false);
+    }
+  }
+
   return (
     <>
       <Col lg="5" md="7">
@@ -82,7 +135,11 @@ const Login = () => {
             <div className="text-center text-muted mb-4">
               <small>Or sign in with credentials</small>
             </div>
-            <Form role="form">
+            {notify ? 
+            <div className="text-center text-danger mb-4">
+              <b>Could not Sign In. Please try again!</b>
+            </div> : null }
+            <Form role="form" onSubmit={handleLogin}>
               <FormGroup className="mb-3">
                 <InputGroup className="input-group-alternative">
                   <InputGroupAddon addonType="prepend">
@@ -90,10 +147,12 @@ const Login = () => {
                       <i className="ni ni-email-83" />
                     </InputGroupText>
                   </InputGroupAddon>
-                  <Input
+                  <Input required
                     placeholder="Email"
                     type="email"
+                    value={email}
                     autoComplete="new-email"
+                    onChange={(e)=>setEmail(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -104,10 +163,12 @@ const Login = () => {
                       <i className="ni ni-lock-circle-open" />
                     </InputGroupText>
                   </InputGroupAddon>
-                  <Input
+                  <Input required
                     placeholder="Password"
                     type="password"
                     autoComplete="new-password"
+                    value={password}
+                    onChange={(e)=>setPassword(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -125,9 +186,11 @@ const Login = () => {
                 </label>
               </div>
               <div className="text-center">
-                <Button className="my-4" color="primary" type="button">
-                  Sign in
-                </Button>
+                {isLoading ? <Spinner /> :
+                  <Button className="mt-4" color="primary" type="submit">
+                    Sign In
+                  </Button>
+                } 
               </div>
             </Form>
           </CardBody>
@@ -157,4 +220,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default withRouter(Login);
