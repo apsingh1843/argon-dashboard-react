@@ -34,7 +34,7 @@ import {
   Spinner
 } from "reactstrap";
 import { withRouter } from 'react-router-dom';
-import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../firebase-config";
 import axios from "axios";
 
@@ -43,11 +43,11 @@ const Register = (props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userData, setUserData] = useState({});
+  //const [userData, setUserData] = useState({});
 
-  onAuthStateChanged(auth, (currentUser) => {
-    setUserData(currentUser);
-  });
+  // onAuthStateChanged(auth, (currentUser) => {
+  //   setUserData(currentUser);
+  // });
 
   const apiCall = async (data) =>{
     console.log(data.uid, data.email);
