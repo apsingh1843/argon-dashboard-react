@@ -17,6 +17,7 @@
 */
 
 // reactstrap components
+import { useState } from 'react';
 import {
   Button,
   Card,
@@ -30,9 +31,71 @@ import {
   InputGroup,
   Row,
   Col,
+  Spinner
 } from "reactstrap";
+import { withRouter } from 'react-router-dom';
+import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "firebase/auth";
+import { auth } from "../../firebase-config";
+import axios from "axios";
 
-const Register = () => {
+const Register = (props) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [userData, setUserData] = useState({});
+
+  onAuthStateChanged(auth, (currentUser) => {
+    setUserData(currentUser);
+  });
+
+  const apiCall = async (data) =>{
+    console.log(data.uid, data.email);
+    const postData = {
+      uid : data.uid,
+      email : data.email
+    }
+    var config = {
+      method: 'post',
+      url: 'https://registertest.free.beeceptor.com/init',
+      headers: { 
+        'Content-Type': 'text/plain'
+      },
+      data : JSON.stringify(postData)
+    };
+    
+    axios(config)
+    .then(response => {
+      console.log(JSON.stringify(response.data));
+      props.history.push('/auth/success');
+    })
+    .catch(function (error) {
+      console.log(error);
+      props.history.push('/auth/fail');
+    });
+  }
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    console.log(name, email, password);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      //console.log(user);
+      updateProfile(auth.currentUser, {
+        displayName: name
+      }).then(() => {
+        apiCall(auth.currentUser);
+      }).catch((error) => {
+        console.log(error);
+      });
+    }
+    catch (err) {
+      console.log(err.message);      
+      setIsLoading(false);
+    }
+  }
+
   return (
     <>
       <Col lg="6" md="8">
@@ -82,7 +145,7 @@ const Register = () => {
             <div className="text-center text-muted mb-4">
               <small>Or sign up with credentials</small>
             </div>
-            <Form role="form">
+            <Form role="form" onSubmit={handleRegister}>
               <FormGroup>
                 <InputGroup className="input-group-alternative mb-3">
                   <InputGroupAddon addonType="prepend">
@@ -90,7 +153,12 @@ const Register = () => {
                       <i className="ni ni-hat-3" />
                     </InputGroupText>
                   </InputGroupAddon>
-                  <Input placeholder="Name" type="text" />
+                  <Input required
+                    placeholder="Name" 
+                    type="text"
+                    value={name} 
+                    onChange={(e)=>setName(e.target.value)} 
+                  />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
@@ -100,10 +168,12 @@ const Register = () => {
                       <i className="ni ni-email-83" />
                     </InputGroupText>
                   </InputGroupAddon>
-                  <Input
+                  <Input required
                     placeholder="Email"
                     type="email"
+                    value={email}
                     autoComplete="new-email"
+                    onChange={(e)=>setEmail(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -114,10 +184,12 @@ const Register = () => {
                       <i className="ni ni-lock-circle-open" />
                     </InputGroupText>
                   </InputGroupAddon>
-                  <Input
+                  <Input required
                     placeholder="Password"
                     type="password"
+                    value={password}
                     autoComplete="new-password"
+                    onChange={(e)=>setPassword(e.target.value)}
                   />
                 </InputGroup>
               </FormGroup>
@@ -150,9 +222,11 @@ const Register = () => {
                 </Col>
               </Row>
               <div className="text-center">
-                <Button className="mt-4" color="primary" type="button">
-                  Create account
-                </Button>
+                {isLoading ? <Spinner /> :
+                  <Button className="mt-4" color="primary" type="submit">
+                    Create account
+                  </Button>
+                }
               </div>
             </Form>
           </CardBody>
@@ -162,4 +236,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default withRouter(Register);

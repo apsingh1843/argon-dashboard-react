@@ -16,6 +16,7 @@
 
 */
 import { Link } from "react-router-dom";
+import { useState } from 'react';
 // reactstrap components
 import {
   UncontrolledCollapse,
@@ -27,9 +28,21 @@ import {
   Container,
   Row,
   Col,
+  Button
 } from "reactstrap";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../../firebase-config";
 
 const AdminNavbar = () => {
+  const [userData, setUserData] = useState({});
+
+  onAuthStateChanged(auth, (currentUser) => {
+    setUserData(currentUser);
+  });
+  const logout = () =>{
+   signOut(auth);
+  }
+
   return (
     <>
       <Navbar className="navbar-top navbar-horizontal navbar-dark" expand="md">
@@ -74,22 +87,30 @@ const AdminNavbar = () => {
                   <span className="nav-link-inner--text">Dashboard</span>
                 </NavLink>
               </NavItem>
+              {userData ? 
               <NavItem>
-                <NavLink
-                  className="nav-link-icon"
-                  to="/auth/register"
-                  tag={Link}
-                >
-                  <i className="ni ni-circle-08" />
-                  <span className="nav-link-inner--text">Register</span>
-                </NavLink>
+                <span className="nav-link-inner--text">Hello, {userData.displayName} !</span>
               </NavItem>
-              <NavItem>
-                <NavLink className="nav-link-icon" to="/auth/login" tag={Link}>
-                  <i className="ni ni-key-25" />
-                  <span className="nav-link-inner--text">Login</span>
-                </NavLink>
-              </NavItem>
+              : 
+              <>
+                <NavItem>
+                  <NavLink
+                    className="nav-link-icon"
+                    to="/auth/register"
+                    tag={Link}
+                  >
+                    <i className="ni ni-circle-08" />
+                    <span className="nav-link-inner--text">Register</span>
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink className="nav-link-icon" to="/auth/login" tag={Link}>
+                    <i className="ni ni-key-25" />
+                    <span className="nav-link-inner--text">Login</span>
+                  </NavLink>
+                </NavItem>
+              </>
+              }
               <NavItem>
                 <NavLink
                   className="nav-link-icon"
@@ -99,6 +120,12 @@ const AdminNavbar = () => {
                   <i className="ni ni-single-02" />
                   <span className="nav-link-inner--text">Profile</span>
                 </NavLink>
+              </NavItem>
+              <NavItem>
+                {userData ? 
+                <Button className="my-4" color="primary" type="button" onClick={logout}>
+                  Logout
+                </Button> : null}
               </NavItem>
             </Nav>
           </UncontrolledCollapse>
