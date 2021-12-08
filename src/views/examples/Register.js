@@ -74,6 +74,7 @@ const Register = (props) => {
       console.log(error);
       props.history.push('/auth/fail');
     });
+    setIsLoading(false);
   }
 
   const handleRegister = async (e) => {
@@ -97,6 +98,9 @@ const Register = (props) => {
       setIsLoading(false);
       setNotify(true);
     }
+    setName('');
+    setEmail('');
+    setPassword('');
   }
 
   return (
@@ -209,7 +213,7 @@ const Register = (props) => {
               <Row className="my-4">
                 <Col xs="12">
                   <div className="custom-control custom-control-alternative custom-checkbox">
-                    <input
+                    <input required
                       className="custom-control-input"
                       id="customCheckRegister"
                       type="checkbox"

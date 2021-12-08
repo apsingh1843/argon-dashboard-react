@@ -68,6 +68,7 @@ const Login = (props) => {
       console.log(error);
       props.history.push('/auth/fail');
     });
+    setIsLoading(false);
   }
 
   const handleLogin = async (e) => {
@@ -84,6 +85,8 @@ const Login = (props) => {
       setNotify(true);     
       setIsLoading(false);
     }
+    setEmail('');
+    setPassword('');
   }
 
   return (
